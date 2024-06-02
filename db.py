@@ -1,36 +1,30 @@
-import psycopg2
+import asyncpg
+from config import DATABASE_URL  
 
 
 class DB:
-    def __init__(
-        self,
-        name: str,
-        user="postgres",
-        password="qwerty",
-        host="localhost",
-        port="5432",
-    ):
-        self.conn = psycopg2.connect(
-            dbname=name, user=user, password=password, host=host, port=port
-        )
-        self.create_table_main()
+    async def __init__(self):
+        self.pool = await asyncpg.create_pool(DATABASE_URL) 
+        await self.init_db()
+        return self.pool
+    
+    async def init_db(self):     
+        async with self.pool.acquire() as connection:         
+            await connection.execute('''CREATE TABLE IF NOT EXISTS customers (                 
+                            id SERIAL PRIMARY KEY,                 
+                            user_id BIGINT UNIQUE,                 
+                            username TEXT,
+                            balance FLOAT,                 
+                            age INT,                 
+                            gender TEXT,                 
+                            info TEXT,                 
+                            photo TEXT,                 
+                            location GEOMETRY(Point, 4326),
+                            range INTEGER,                 
+                            is_gold BOOLEAN DEFAULT FALSE,
+                            is_active BOOLEAN);''')
 
-    def create_table_main(self):
-        with self.conn:
-            with self.conn.cursor() as cursor:
-                cursor.execute("""CREATE TABLE IF NOT EXISTS customer (
-                    id INTEGER,
-                    name TEXT,
-                    position INTEGER,
-                    Balance FLOAT,
-                    Range INTEGER,
-                    When TEXT,
-                    Gender TEXT,
-                    Gold BOOL,
-                    Valide BOOL);
-                """)
-
-                cursor.execute("""CREATE TABLE IF NOT EXISTS coincedences (
-                    id INTEGER,
-                    Customers TEXT);
-                """)
+        async with self.pool.acquire() as connection:         
+            await connection.execute('''CREATE TABLE IF NOT EXISTS coincedences (                 
+                            id INTEGER,                 
+                            customers BOOLEAN);''')
