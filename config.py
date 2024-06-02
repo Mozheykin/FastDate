@@ -8,9 +8,17 @@ LANGUAGES = {
     'en': 'English',
 }
 
-DEFAULT_PROFILE = {
+DEFAULT_CUSTOMER = {
+    'user_id': 0,                 
+    'username': 'NoName',
+    'balance': 100.0,                 
+    'age': 0,                 
+    'gender': 'male',                 
     'language': 'ru',
-    'range': 500,
-    'balance': 100.0,
+    'info': 'NoInfo',                 
+    'photo': 'NoPhoto',                 
+    'location': '(12.33, 45.87)',
+    'range': 500,                 
     'is_gold': True,
+    'is_active': True,
 }

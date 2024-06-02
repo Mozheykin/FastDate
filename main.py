@@ -1,13 +1,13 @@
 import logging 
 import asyncio
 import sys
-from os import getenv
 from aiogram import Bot, Dispatcher, html
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
-from config import BOT_TOKEN, LANGUAGES 
+from config import BOT_TOKEN, LANGUAGES, DEFAULT_CUSTOMER
+from models.customer import Customer
 from db import DB 
 from handlers import registration, matching, profile, support  
 
@@ -17,8 +17,16 @@ db_postgres = DB()
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-
-    await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
+    default_customer = Customer(**DEFAULT_CUSTOMER)
+    default_customer.user_id = message.chat.id
+    default_customer.username = message.from_user.full_name
+    if await db_postgres.get_customer(default_customer.user_id) is None:
+        await db_postgres.add_customer(default_customer)
+        match default_customer.language:
+            case 'ru':  await message.answer(f"Профиль успешно создан. Рад тебя видеть, {html.bold(message.from_user.full_name)}!")
+    else:
+        match default_customer.language:
+            case 'ru':  await message.answer('У вас уже был профиль, желаете обновить его данные?')
 
 
 @dp.message()
