@@ -13,11 +13,11 @@ from handlers import registration, matching, profile, support
 
 
 dp = Dispatcher()  
-pool = DB()
+db_postgres = DB()
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-    
+
     await message.answer(f"Hello, {html.bold(message.from_user.full_name)}!")
 
 
@@ -48,6 +48,7 @@ async def main():
     if BOT_TOKEN is None:
         return
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    pool = await db_postgres.get_pool()
     await dp.start_polling(bot)
 
 if __name__ == "__main__":     

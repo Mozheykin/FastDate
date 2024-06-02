@@ -1,9 +1,8 @@
 import asyncpg
 from config import DATABASE_URL  
 
-
 class DB:
-    async def __init__(self):
+    async def get_pool(self):
         self.pool = await asyncpg.create_pool(DATABASE_URL) 
         await self.init_db()
         return self.pool
@@ -17,9 +16,10 @@ class DB:
                             balance FLOAT,                 
                             age INT,                 
                             gender TEXT,                 
+                            language TEXT,
                             info TEXT,                 
                             photo TEXT,                 
-                            location GEOMETRY(Point, 4326),
+                            location TEXT,
                             range INTEGER,                 
                             is_gold BOOLEAN DEFAULT FALSE,
                             is_active BOOLEAN);''')
