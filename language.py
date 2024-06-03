@@ -31,3 +31,15 @@ ACTIVATE_MESSAGE = {
     'uk': 'Ваш акаунт активний і готовий до нових пошуків.',
     'en': 'Your account is active and ready for new searches.',
 }
+
+DELETE_MESSAGE = {
+    'ru': 'Ваш аккаунт был удален. В любой момент вы можете вернуться.',
+    'uk': 'Ваш акаунт було видалено. У будь-який момент ви можете повернутися.',
+    'en': 'Your account has been deleted. You can return at any time.',
+}
+
+GOLD_MESSAGE= {
+    'ru': 'На ваш аккаунт активирован GOLD статус.',
+    'uk': 'На ваш акаунт активовано GOLD статус.',
+    'en': 'GOLD status has been activated on your account.',
+}
