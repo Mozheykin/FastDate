@@ -2,11 +2,6 @@ import os
 
 BOT_TOKEN = os.getenv("BOT_TOKEN") 
 DATABASE_URL = os.getenv("DATABASE_URL")  
-LANGUAGES = {
-    'ru': 'Русский',
-    'uk': 'Український', 
-    'en': 'English',
-}
 
 DEFAULT_CUSTOMER = {
     'user_id': 0,                 
@@ -14,7 +9,7 @@ DEFAULT_CUSTOMER = {
     'balance': 100.0,                 
     'age': 0,                 
     'gender': 'male',                 
-    'language': 'ru',
+    'language': 'en',
     'info': 'NoInfo',                 
     'photo': 'NoPhoto',                 
     'location': '(12.33, 45.87)',
@@ -22,3 +17,4 @@ DEFAULT_CUSTOMER = {
     'is_gold': True,
     'is_active': True,
 }
+

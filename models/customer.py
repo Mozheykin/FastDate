@@ -11,7 +11,7 @@ class Customer(BaseModel):
     info: str                 
     photo: str                 
     location: str
-    _range: int                 
+    range: int                 
     is_gold: bool
     is_active: bool
 
@@ -26,6 +26,6 @@ class CustomerView(BaseModel):
     info: str                 
     photo: str                 
     location: str
-    _range: int                 
+    range: int                 
     is_gold: bool
     is_active: bool
