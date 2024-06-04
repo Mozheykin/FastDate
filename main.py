@@ -8,7 +8,13 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, FSInputFile
 
 from config import BOT_TOKEN, DEFAULT_CUSTOMER
-from language import ACTIVATE_MESSAGE, DEACTIVATE_MESSAGE, DELETE_MESSAGE, GOLD_MESSAGE, PROBLEM_LANGUAGE, START_MESSAGE
+from language import (ACTIVATE_MESSAGE, 
+                        DEACTIVATE_MESSAGE, 
+                        DELETE_MESSAGE, 
+                        GOLD_MESSAGE, 
+                        PROBLEM_LANGUAGE, 
+                        START_MESSAGE
+                    )
 from models.customer import Customer, CustomerView
 from db import DB 
 from handlers import registration, matching, profile, support  
