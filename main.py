@@ -1,10 +1,10 @@
 import logging 
 import asyncio
 import sys
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, Router, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart
+from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, FSInputFile
 
 from config import BOT_TOKEN, DEFAULT_CUSTOMER
@@ -15,6 +15,7 @@ from handlers import registration, matching, profile, support
 
 
 dp = Dispatcher()  
+form_router = Router()
 logo_mp4 = FSInputFile('media/logo.MP4')
 bot = None
 db_postgres = DB()
@@ -47,7 +48,7 @@ async def command_start_handler(message: Message) -> None:
             await message.reply(activate_message)
             
 @dp.message(commands=['delete'])
-async def delete_customer(message: types.Message):
+async def delete_customer(message: Message):
     _id = message.chat.id
     get_user = await db_postgres.get_customer(_id)
     if get_user is not None:
@@ -57,12 +58,20 @@ async def delete_customer(message: types.Message):
         deleted_message = DELETE_MESSAGE.get(language, PROBLEM_LANGUAGE)
         await message.reply(deleted_message)
 
-@dp.message(commands=['change'])
-async def change_customer(message: types.Message):
-    await message.reply("Your data has been updated.")
+# @dp.message(commands=['change'])
+# async def change_customer(message: types.Message):
+#     await message.reply("Your data has been updated.")
+@dp.message(Command('registration', 'change'))
+@dp.message(F.text.casefold() == 'registration')
+async def registration_customer(message: Message):
+    # TODO запустить регистрацию для разных языков, продумать отправку
+    await message.answer('REGISTRATION:')
+    await message.answer('Send your name:')
+    await registration.registration(form_router)
+    
 
 @dp.message(commands=['gold'])
-async def set_gold_status(message: types.Message):
+async def set_gold_status(message: Message):
     _id = message.chat.id
     get_user = await db_postgres.get_customer(_id)
     if get_user is not None:
