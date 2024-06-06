@@ -1,9 +1,3 @@
-LANGUAGES = {
-    'ru': 'Русский',
-    'uk': 'Український', 
-    'en': 'English',
-}
-
 PROBLEM_LANGUAGE = 'You have a problem with the selected language. You need'\
                     'to re-enter your language information.'
 
@@ -42,4 +36,10 @@ GOLD_MESSAGE= {
     'ru': 'На ваш аккаунт активирован GOLD статус.',
     'uk': 'На ваш акаунт активовано GOLD статус.',
     'en': 'GOLD status has been activated on your account.',
+}
+
+CHANGE_LANGUAGE = {
+    'ru': 'Язык сменен на русский.',
+    'uk': 'Язык змінений на український.',
+    'en': 'Language changed to English.',
 }

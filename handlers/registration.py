@@ -1,11 +1,12 @@
-from aiogram import Router, F
+from aiogram import Router, F, Dispatcher
 from aiogram.types import Message, ReplyKeyboardRemove, ContentType
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from models.registration import Form
 from models.customer import Customer
+from support.keyboards import location_keyboard
 
-async def registration(router:Router):
+async def registration(router:Router|Dispatcher):
     # TODO изменить заполнение по своей форме
     @router.message(Command("cancel"))
     @router.message(F.text.casefold() == "cancel")
@@ -66,11 +67,7 @@ async def registration(router:Router):
         await state.set_state(Form.location)
         await message.answer(
             "Please share your location:",
-            reply_markup=ReplyKeyboardMarkup(
-                keyboard=[[KeyboardButton(text="Share location", request_location=True)]],
-                resize_keyboard=True,
-                one_time_keyboard=True
-            )
+            reply_markup=location_keyboard,
         )
 
     @router.message(Form.location, content_types=ContentType.LOCATION)

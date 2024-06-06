@@ -1,3 +1,4 @@
+from config import BOT_TOKEN, DEFAULT_CUSTOMER, DATABASE_URL, LANGUAGES
 import logging 
 import asyncio
 import sys
@@ -5,10 +6,9 @@ from aiogram import Bot, Dispatcher, Router, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message, FSInputFile
+from aiogram.types import Message, FSInputFile, CallbackQuery
 
-from config import BOT_TOKEN, DEFAULT_CUSTOMER
-from language import (ACTIVATE_MESSAGE, 
+from support.language import (ACTIVATE_MESSAGE, CHANGE_LANGUAGE, 
                         DEACTIVATE_MESSAGE, 
                         DELETE_MESSAGE, 
                         GOLD_MESSAGE, 
@@ -17,7 +17,8 @@ from language import (ACTIVATE_MESSAGE,
                     )
 from models.customer import Customer, CustomerView
 from db import DB 
-from handlers import registration, matching, profile, support  
+from support.keyboards import keyboard_select_language
+from handlers import registration#, matching, profile, support  
 
 
 dp = Dispatcher()  
@@ -41,19 +42,19 @@ async def command_start_handler(message: Message) -> None:
         await db_postgres.add_customer(default_customer)
         start_message = START_MESSAGE.get(language, PROBLEM_LANGUAGE)
         await message.answer_video(logo_mp4)
-        await message.answer(start_message)
+        await message.answer(start_message, reply_markup=keyboard_select_language)
     else:
         default_customer = CustomerView(**geted_customer)
         language = default_customer.language
         if default_customer.is_active is not True:
             activate_message = DEACTIVATE_MESSAGE.get(language, PROBLEM_LANGUAGE)
             await db_postgres.activate_customer(default_customer.user_id)
-            await message.reply(activate_message)
+            await message.reply(activate_message, reply_markup=keyboard_select_language)
         else:
             activate_message = ACTIVATE_MESSAGE.get(language, PROBLEM_LANGUAGE)
             await message.reply(activate_message)
             
-@dp.message(commands=['delete'])
+@dp.message(Command('delete'))
 async def delete_customer(message: Message):
     _id = message.chat.id
     get_user = await db_postgres.get_customer(_id)
@@ -64,19 +65,16 @@ async def delete_customer(message: Message):
         deleted_message = DELETE_MESSAGE.get(language, PROBLEM_LANGUAGE)
         await message.reply(deleted_message)
 
-# @dp.message(commands=['change'])
-# async def change_customer(message: types.Message):
-#     await message.reply("Your data has been updated.")
 @dp.message(Command('registration', 'change'))
 @dp.message(F.text.casefold() == 'registration')
 async def registration_customer(message: Message):
     # TODO запустить регистрацию для разных языков, продумать отправку
     await message.answer('REGISTRATION:')
     await message.answer('Send your name:')
-    await registration.registration(form_router)
+    await registration.registration(dp)
     
 
-@dp.message(commands=['gold'])
+@dp.message(Command('gold'))
 async def set_gold_status(message: Message):
     _id = message.chat.id
     get_user = await db_postgres.get_customer(_id)
@@ -87,6 +85,15 @@ async def set_gold_status(message: Message):
         await db_postgres.set_gold_status(_id)
         gold_message = GOLD_MESSAGE.get(language, PROBLEM_LANGUAGE)
         await message.reply(gold_message)
+
+@dp.callback_query()
+async def change_language_to_ru(call: CallbackQuery):
+    _id = call.from_user.id
+    match call.data:
+        case lang if lang in LANGUAGES:
+            await db_postgres.change_language(_id, lang)
+            answer = CHANGE_LANGUAGE.get(lang, PROBLEM_LANGUAGE)
+            await call.message.answer(text=answer)
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
@@ -115,9 +122,13 @@ async def main():
     global bot
     if BOT_TOKEN is None:
         return
+    await db_postgres.init_pool()
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     await dp.start_polling(bot)
 
 if __name__ == "__main__":     
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    print(f'[INFO] {DATABASE_URL=}')
+    print(f'[INFO] {BOT_TOKEN=}')
+    print(f'[INFO] {DEFAULT_CUSTOMER=}')
     asyncio.run(main())

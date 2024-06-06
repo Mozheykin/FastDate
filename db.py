@@ -3,15 +3,15 @@ from config import DATABASE_URL
 from models.customer import Customer  
 
 class DB:
-    async def get_pool(self):
+    async def init_pool(self):
         self.pool = await asyncpg.create_pool(DATABASE_URL) 
         await self.init_db()
-        return self.pool
     
     async def get_customer(self, user_id:int):
         if self.pool is not None:
             async with self.pool.acquire() as connection:
-                row = await connection.fetchrow('SELECT * FROM customers WHERE user_id=$1', user_id)
+                row = await connection.fetchrow(
+                    'SELECT * FROM customers WHERE user_id=$1', user_id)
                 return row
 
     async def activate_customer(self, user_id: int):
@@ -50,12 +50,23 @@ class DB:
                     WHERE user_id = $1
                 ''', user_id)
         
+    async def change_language(self, user_id: int, language: str):
+        if self.pool is not None:
+            async with self.pool.acquire() as connection:
+                await connection.execute('''
+                    UPDATE customers
+                    SET language = $1
+                    WHERE user_id = $2
+                ''', language, user_id)
+
+
     async def add_customer(self, c: Customer):
         if self.pool is not None:
             async with self.pool.acquire() as connection:
                 await connection.execute('''
-                    INSERT INTO customers (user_id, username, balance, age, gender, language, info, 
-                                        photo, location, range, is_gold, is_active)
+                    INSERT INTO customers 
+                    (user_id, username, balance, age, gender, language, info, 
+                    photo, location, range, is_gold, is_active)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                 ''', c.user_id, c.username, c.balance, c.age, c.gender, c.language, c.info, 
                 c.photo, c.location, c.range, c.is_gold, c.is_active)

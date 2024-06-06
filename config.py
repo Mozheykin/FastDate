@@ -18,3 +18,11 @@ DEFAULT_CUSTOMER = {
     'is_active': True,
 }
 
+length_message = 1000
+
+
+LANGUAGES = {
+    'ru': "🇷🇺 Russian 🇷🇺",
+    'uk': "🇺🇦 Ukrainian 🇺🇦",
+    'en': "🇺🇲 English 🇺🇲",
+}
