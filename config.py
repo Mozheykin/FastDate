@@ -1,5 +1,5 @@
 import os  
-
+from models.customer import Gender
 BOT_TOKEN = os.getenv("BOT_TOKEN") 
 DATABASE_URL = os.getenv("DATABASE_URL")  
 
@@ -8,7 +8,7 @@ DEFAULT_CUSTOMER = {
     'username': 'NoName',
     'balance': 100.0,                 
     'age': 0,                 
-    'gender': 'male',                 
+    'gender': Gender.male,                 
     'language': 'en',
     'info': 'NoInfo',                 
     'photo': 'NoPhoto',                 
@@ -19,7 +19,6 @@ DEFAULT_CUSTOMER = {
 }
 
 length_message = 1000
-
 
 LANGUAGES = {
     'ru': "🇷🇺 Russian 🇷🇺",

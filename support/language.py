@@ -43,3 +43,9 @@ CHANGE_LANGUAGE = {
     'uk': 'Язык змінений на український.',
     'en': 'Language changed to English.',
 }
+
+REG_NAME = {
+    'ru': 'Введите ваше имя:',
+    'uk': 'Введіть ваше ім\'я:',
+    'en': 'Enter your name:',
+}

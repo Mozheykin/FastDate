@@ -59,7 +59,6 @@ class DB:
                     WHERE user_id = $2
                 ''', language, user_id)
 
-
     async def add_customer(self, c: Customer):
         if self.pool is not None:
             async with self.pool.acquire() as connection:
@@ -70,6 +69,15 @@ class DB:
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                 ''', c.user_id, c.username, c.balance, c.age, c.gender, c.language, c.info, 
                 c.photo, c.location, c.range, c.is_gold, c.is_active)
+
+    async def change_customer(self, what_replace:str, parametr:str|int, user_id: int):
+        if self.pool is not None:
+            async with self.pool.acquire() as connection:
+                await connection.execute(f'''
+                    UPDATE customers 
+                    SET {what_replace} = $1
+                    WHERE user_id = $2
+                ''', parametr, user_id)
 
     async def init_db(self):     
         if self.pool is not None:

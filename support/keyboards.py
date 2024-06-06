@@ -7,8 +7,6 @@ from aiogram.types import (
 
 from config import LANGUAGES
 
-
-
 kb = list()
 for key, value in LANGUAGES.items():
     kb.append([InlineKeyboardButton(text=value, callback_data='key')])

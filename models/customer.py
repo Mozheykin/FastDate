@@ -1,5 +1,9 @@
 from pydantic import BaseModel
+from enum import Enum
 
+class Gender(Enum):
+    male = 'male'
+    female = 'female'
 
 class Customer(BaseModel):
     user_id: int                 
