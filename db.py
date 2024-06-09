@@ -72,6 +72,7 @@ class DB:
 
     async def change_customer(self, what_replace:str, parametr:str|int, user_id: int):
         if self.pool is not None:
+            # TODO переписать на изменяемые данные
             async with self.pool.acquire() as connection:
                 await connection.execute(f'''
                     UPDATE customers 

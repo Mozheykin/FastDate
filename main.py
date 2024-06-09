@@ -16,7 +16,7 @@ from support.language import (ACTIVATE_MESSAGE,
                         START_MESSAGE)
 from models.customer import Customer, CustomerView
 from db import DB 
-from support.keyboards import keyboard_select_language
+from support.keyboards import get_gender_keyboard, keyboard_select_language
 # from handlers import matching, profile, support  
 from config import BOT_TOKEN, DEFAULT_CUSTOMER, DATABASE_URL, LANGUAGES
 from support.translate import translate_prompt
@@ -96,7 +96,12 @@ async def process_age(message: Message, state: FSMContext) -> None:
         return
     await state.update_data(age=age)
     await state.set_state(Form.gender)
-    await message.answer("Enter your gender:")
+    # TODO сделать кнопки под 2 гендера
+    customer = await db_postgres.get_customer(message.chat.id)
+    if customer is not None:
+        customerview = CustomerView(**customer)
+        kb_gender = get_gender_keyboard(customerview.language)
+        await message.answer("Enter your gender:", reply_markup=kb_gender)
 
 @dp.message(Form.gender)
 async def process_gender(message: Message, state: FSMContext) -> None:
@@ -109,6 +114,7 @@ async def process_info(message: Message, state: FSMContext) -> None:
     await state.update_data(info=message.text)
     await state.set_state(Form.photo)
     await message.answer("Send your photo:")
+    # Слать несколько фото
 
 @dp.message(Form.photo, F.content_type.in_({ContentType.PHOTO, ContentType.VIDEO}))
 async def process_photo(message: Message, state: FSMContext) -> None:
@@ -141,11 +147,14 @@ async def process_range(message: Message, state: FSMContext) -> None:
         return
     data = await state.update_data(range=range_val)
     registration_customer = RegistrationCustomer(**data)
+    # TODO вставить проверку, на значения внутри БД, есл иравны, то пропускать замену
+    # В идеале переписать 1 функцией, чтоб было меньше вызовов
     await db_postgres.change_customer('username', registration_customer.username, message.chat.id)
     await db_postgres.change_customer('age', registration_customer.age, message.chat.id)
     await db_postgres.change_customer('gender', registration_customer.gender, message.chat.id)
     await db_postgres.change_customer('info', registration_customer.info, message.chat.id)
     await db_postgres.change_customer('photo', registration_customer.photo, message.chat.id)
+    # TODO выгружатль фото
     await db_postgres.change_customer('location', registration_customer.location, message.chat.id)
     await db_postgres.change_customer('range', registration_customer.range, message.chat.id)
     await message.answer("Registration complete!")

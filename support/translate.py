@@ -1,5 +1,4 @@
 from typing import Optional
-from asyncpg.connection import transaction
 from deep_translator.google import GoogleTranslator
 from config import length_message
 from support.language import PROBLEM_LANGUAGE

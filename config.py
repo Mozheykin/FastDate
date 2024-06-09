@@ -25,3 +25,18 @@ LANGUAGES = {
     'uk': "🇺🇦 Ukrainian 🇺🇦",
     'en': "🇺🇲 English 🇺🇲",
 }
+
+GENDERS = {
+    'ru': {
+        'male': "👨 Мужской 👨",
+        'female': "👩 Женский 👩",
+    },
+    'uk': {
+        'male': "👨 Мужскій 👨",
+        'female': "👩 Жіночий 👩",
+    },
+    'en': {
+        'male': "👨 Male 👨",
+        'female': "👩 Female 👩",
+    }
+}
