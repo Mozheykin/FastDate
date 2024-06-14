@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class Form(StatesGroup):
     username = State()
+    language = State()
     age = State()
     gender = State()
     language = State()
@@ -13,6 +14,7 @@ class Form(StatesGroup):
 
 class RegistrationCustomer(BaseModel):
     username: str
+    language: str
     age: int
     gender: str
     info: str

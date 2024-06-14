@@ -12,7 +12,7 @@ from support.language import (ACTIVATE_MESSAGE,
                         CHANGE_LANGUAGE, 
                         DEACTIVATE_MESSAGE, 
                         DELETE_MESSAGE, 
-                        GOLD_MESSAGE, REG_NAME, 
+                        GOLD_MESSAGE, REG_AGE, REG_GENDER, REG_INFO, REG_LOCATION, REG_NAME, REG_PHOTO, REG_RANGE, 
                         START_MESSAGE)
 from models.customer import Customer, CustomerView
 from db import DB 
@@ -75,65 +75,72 @@ async def registration_customer(message: Message, state: FSMContext):
         def_customer = CustomerView(**customer)
         language = def_customer.language
         name_message = translate_prompt(REG_NAME, language)
+        await state.update_data(language=language)
         await state.set_state(Form.username)
         await message.answer(name_message)
 
 @dp.message(Form.username)
 async def process_username(message: Message, state: FSMContext) -> None:
-    await state.update_data(username=message.text)
+    data = await state.update_data(username=message.text)
     await state.set_state(Form.age)
-    await message.answer("Enter your age:")
+    language = data.get('language', 'en')
+    age_message = translate_prompt(REG_AGE, language)
+    await message.answer(age_message)
 
 @dp.message(Form.age)
 async def process_age(message: Message, state: FSMContext) -> None:
-    try:
-        if message.text is not None:
-            age = int(message.text)
-        else:
-            age = 18
-    except ValueError:
-        await message.reply("Invalid age. Enter an integer value.")
-        return
-    await state.update_data(age=age)
-    await state.set_state(Form.gender)
-    # TODO сделать кнопки под 2 гендера
-    customer = await db_postgres.get_customer(message.chat.id)
-    if customer is not None:
-        customerview = CustomerView(**customer)
-        kb_gender = get_gender_keyboard(customerview.language)
-        await message.answer("Enter your gender:", reply_markup=kb_gender)
+    if message.text is not None and message.text.isdigit():
+        age = int(message.text)
+        if 18 < age < 75:
+            data = await state.update_data(age=age)
+            language = data.get('language', 'en')
+            gender_message = translate_prompt(REG_GENDER, language)
+            await state.set_state(Form.gender)
+            customer = await db_postgres.get_customer(message.chat.id)
+            if customer is not None:
+                customerview = CustomerView(**customer)
+                kb_gender = get_gender_keyboard(customerview.language)
+                await message.answer(gender_message, reply_markup=kb_gender)
 
 @dp.message(Form.gender)
 async def process_gender(message: Message, state: FSMContext) -> None:
-    await state.update_data(gender=message.text)
+    data = await state.update_data(gender=message.text)
+    language = data.get('language', 'en')
+    info_message = translate_prompt(REG_INFO, language)
     await state.set_state(Form.info)
-    await message.answer("Enter additional info:")
+    await message.answer(info_message)
 
 @dp.message(Form.info)
 async def process_info(message: Message, state: FSMContext) -> None:
-    await state.update_data(info=message.text)
+    data = await state.update_data(info=message.text)
+    language = data.get('language', 'en')
+    photo_message = translate_prompt(REG_PHOTO, language)
     await state.set_state(Form.photo)
-    await message.answer("Send your photo:")
+    await message.answer(photo_message)
     # Слать несколько фото
 
 @dp.message(Form.photo, F.content_type.in_({ContentType.PHOTO, ContentType.VIDEO}))
 async def process_photo(message: Message, state: FSMContext) -> None:
     if message.photo is not None:
         photo_id = message.photo[-1].file_id
-        await state.update_data(photo=photo_id)
-    await state.set_state(Form.location)
-    await message.answer(
-        "Please share your location:",
-        reply_markup=location_keyboard,
-    )
+        data = await state.update_data(photo=photo_id)
+        language = data.get('language', 'en')
+        location_message = translate_prompt(REG_LOCATION, language)
+        await state.set_state(Form.location)
+        await message.answer(
+            location_message,
+            reply_markup=location_keyboard,
+        )
 
 @dp.message(Form.location, F.content_type == ContentType.LOCATION)
 async def process_location(message: Message, state: FSMContext) -> None:
     if message.location is not None:
         location = message.location
-        await state.update_data(location=f"{location.latitude}, {location.longitude}")
-    await state.set_state(Form.range)
-    await message.answer("Enter your range:", reply_markup=ReplyKeyboardRemove())
+        data = await state.update_data(location=f"{location.latitude}, {location.longitude}")
+        language = data.get('language', 'en')
+        range_message = translate_prompt(REG_RANGE, language)
+        await state.set_state(Form.range)
+        await message.answer(range_message, reply_markup=ReplyKeyboardRemove())
 
 @dp.message(Form.range)
 async def process_range(message: Message, state: FSMContext) -> None:
