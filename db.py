@@ -87,15 +87,19 @@ class DB:
                                 id SERIAL PRIMARY KEY,                 
                                 user_id INTEGER,                 
                                 username TEXT,
-                                balance FLOAT,                 
+                                balance FLOAT DEFAULT 0.0,                 
                                 age INT,                 
                                 gender TEXT,                 
-                                language TEXT,
+                                language TEXT DEFAULT 'en',
                                 info TEXT,                 
                                 photo TEXT,                 
                                 location TEXT,
-                                range INTEGER,                 
+                                range INTEGER DEFAULT 500,                
+                                straik INTEGER DEFAULT 0,
+                                role INTEGER DEFAULT 99,
+                                disabled_gold TEXT DEFAULT '0',
                                 is_gold BOOLEAN DEFAULT FALSE,
+                                is_baned BOOLEAN DEFAULT FALSE,
                                 is_active BOOLEAN);''')
 
             async with self.pool.acquire() as connection:         
