@@ -187,7 +187,7 @@ async def change_language_to_ru(call: CallbackQuery):
         case lang if lang in LANGUAGES:
             await db_postgres.change_language(_id, lang)
             answer = translate_prompt(CHANGE_LANGUAGE, lang) 
-            await call.message.answer(text=answer)
+            await call.message.answer(text=answer) # pyright: ignore
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
