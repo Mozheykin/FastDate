@@ -70,7 +70,7 @@ class DB:
                 ''', c.user_id, c.username, c.balance, c.age, c.gender, c.language, c.info, 
                 c.photo, c.location, c.range, c.is_gold, c.is_active)
 
-    async def change_customer(self, what_replace:str, parametr:str|int, user_id: int):
+    async def change_customer(self, what_replace:str, parametr:str|int|float, user_id: int):
         if self.pool is not None:
             # TODO переписать на изменяемые данные
             async with self.pool.acquire() as connection:
@@ -79,6 +79,30 @@ class DB:
                     SET {what_replace} = $1
                     WHERE user_id = $2
                 ''', parametr, user_id)
+    
+    async def get_customers(self):
+        if self.pool is not None:
+            async with self.pool.acquire() as connection:
+                rows = await connection.fetch('''
+                    SELECT * FROM customers
+                ''')
+                return rows
+    
+    async def get_matching_customers(self, user_id: int):
+        if self.pool is not None:
+            async with self.pool.acquire() as connection:
+                row = await connection.fetchrow(
+                    'SELECT matching FROM coincedences WHERE user_id=$1', user_id)
+                return row
+    
+    async def set_matching_customers(self, user_id: int, matching: list):
+        if self.pool is not None:
+            async with self.pool.acquire() as connection:
+                await connection.execute('''
+                    UPDATE coincedences
+                    SET matching = $1
+                    WHERE user_id = $2
+                ''', matching, user_id)
 
     async def init_db(self):     
         if self.pool is not None:
@@ -104,5 +128,7 @@ class DB:
 
             async with self.pool.acquire() as connection:         
                 await connection.execute('''CREATE TABLE IF NOT EXISTS coincedences (                 
-                                id INTEGER,                 
-                                customers BOOLEAN);''')
+                                user_id INTEGER,
+                                matching TEXT,
+                                likes TEXT,
+                                dislikes TEXT);''')

@@ -8,11 +8,20 @@ from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, FSInputFile, CallbackQuery, ContentType, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 
+from handlers.matching import get_matching
+from handlers.support import change_customer
 from support.language import (ACTIVATE_MESSAGE, 
                         CHANGE_LANGUAGE, 
                         DEACTIVATE_MESSAGE, 
                         DELETE_MESSAGE, 
-                        GOLD_MESSAGE, REG_AGE, REG_GENDER, REG_INFO, REG_LOCATION, REG_NAME, REG_PHOTO, REG_RANGE, 
+                        GOLD_MESSAGE, 
+                        REG_AGE, 
+                        REG_GENDER, 
+                        REG_INFO, 
+                        REG_LOCATION, 
+                        REG_NAME, 
+                        REG_PHOTO, 
+                        REG_RANGE, 
                         START_MESSAGE)
 from models.customer import Customer, CustomerView
 from db import DB 
@@ -154,18 +163,20 @@ async def process_range(message: Message, state: FSMContext) -> None:
         return
     data = await state.update_data(range=range_val)
     registration_customer = RegistrationCustomer(**data)
-    # TODO вставить проверку, на значения внутри БД, есл иравны, то пропускать замену
-    # В идеале переписать 1 функцией, чтоб было меньше вызовов
-    await db_postgres.change_customer('username', registration_customer.username, message.chat.id)
-    await db_postgres.change_customer('age', registration_customer.age, message.chat.id)
-    await db_postgres.change_customer('gender', registration_customer.gender, message.chat.id)
-    await db_postgres.change_customer('info', registration_customer.info, message.chat.id)
-    await db_postgres.change_customer('photo', registration_customer.photo, message.chat.id)
-    # TODO выгружатль фото
-    await db_postgres.change_customer('location', registration_customer.location, message.chat.id)
-    await db_postgres.change_customer('range', registration_customer.range, message.chat.id)
-    await message.answer("Registration complete!")
-    await state.clear() 
+    db_customer = await db_postgres.get_customer(message.chat.id)
+    if db_customer is not None:
+        customer = CustomerView(**db_customer)
+        await change_customer(message.chat.id, db_postgres, 'age', customer.age, registration_customer.age)
+        await change_customer(message.chat.id, db_postgres, 'username', customer.username, registration_customer.username)
+        await change_customer(message.chat.id, db_postgres, 'gender', customer.gender, registration_customer.gender)
+        await change_customer(message.chat.id, db_postgres, 'info', customer.info, registration_customer.info)
+        await change_customer(message.chat.id, db_postgres, 'photo', customer.photo, registration_customer.photo)
+        await change_customer(message.chat.id, db_postgres, 'location', customer.location, registration_customer.location)
+        await change_customer(message.chat.id, db_postgres, 'range', customer.range, registration_customer.range)
+        # TODO выгружатль фото
+        language = data.get('language', 'en')
+        await state.clear() 
+        await get_matching(message, db_postgres, language)
 # {'username': 'Дмитрий', 'age': 25, 'gender': 'Male', 'info': 'Привет', 'photo': 'AgACAgIAAxkBAAOPZmIUDJWSGAABydjvzfRh-g8OQLI1AAJn3zEbwu4RS1Hxpv-Pffs1AQADAgADeQADNQQ', 'location': '55.759443, 37.692032', 'range': 500.0}
 
 @dp.message(Command('gold'))
@@ -191,26 +202,11 @@ async def change_language_to_ru(call: CallbackQuery):
 
 @dp.message()
 async def echo_handler(message: Message) -> None:
-    """
-    Handler will forward receive a message back to the sender
-
-    By default, message handler will handle all message types (like a text, photo, sticker etc.)
-    """
     try:
         pass
-        # await message.send_copy(chat_id=message.chat.id)
     except TypeError:
         await message.answer("Nice try!")
 
-# async def on_startup(dispatcher):     
-#     dp.pool = DB()   
-#     logging.info("Database connected and tables created")  
-#     i18n = I18nMiddleware('bot', path='locales', default='en') 
-#     dp.middleware.setup(i18n)  
-#     registration.register_handlers(dp) 
-#     matching.register_handlers(dp) 
-#     profile.register_handlers(dp) 
-#     support.register_handlers(dp)  
 async def main():
     global bot
     if BOT_TOKEN is None:

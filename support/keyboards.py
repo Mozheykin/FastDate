@@ -7,7 +7,7 @@ from aiogram.types import (
 
 from config import LANGUAGES, GENDERS
 from support.translate import translation, translate_prompt
-from support.language import LIKE, DISLIKE
+from support.language import LIKE, DISLIKE, MENU
 
 kb = list()
 for key, value in LANGUAGES.items():
@@ -32,13 +32,16 @@ location_keyboard = ReplyKeyboardMarkup(
                 one_time_keyboard=True
             )
 
-def get_like_keyboard(language:str) -> ReplyKeyboardMarkup:
+def get_matching_keyboard(language:str) -> ReplyKeyboardMarkup:
     text_like = translate_prompt(LIKE, language)
     text_dislike = translate_prompt(DISLIKE, language)
+    main_menu = translate_prompt(MENU, language)
     return ReplyKeyboardMarkup(
                     keyboard=[
-                        [KeyboardButton(text=text_like)],
-                        [KeyboardButton(text=text_dislike)]
+                        [KeyboardButton(text=text_like), 
+                        KeyboardButton(text=text_dislike) 
+                        ],
+                        [KeyboardButton(text=main_menu)],
                     ],
                     resize_keyboard=True,
                     one_time_keyboard=True
