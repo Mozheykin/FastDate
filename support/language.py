@@ -11,7 +11,7 @@ START_MESSAGE = {
 ⬇️Start свою подорож з Fast Date⬇️''',
     'en': '''Fast date is a Ukrainian 🇺🇦 product. Which unites people all over the world 🌍 
 
-⬇️Start your journey with Fast Date⬇️''',
+⬇️Start your journey with Fast Date⬇️/info\n/help\n/gold\n/deactivate\n/delete''',
 }
 
 DEACTIVATE_MESSAGE = {
