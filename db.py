@@ -1,6 +1,6 @@
 import asyncpg
 from config import DATABASE_URL
-from models.customer import Customer  
+from models.customer import Customer, CustomerView  
 
 class DB:
     async def init_pool(self):
@@ -80,14 +80,22 @@ class DB:
                     WHERE user_id = $2
                 ''', parametr, user_id)
     
-    async def get_customers(self):
+    async def get_customers(self) -> list[CustomerView]|None:
         if self.pool is not None:
             async with self.pool.acquire() as connection:
                 rows = await connection.fetch('''
                     SELECT * FROM customers
                 ''')
-                return rows
-    
+                return [CustomerView(**customer) for customer in rows]
+     
+    async def get_active_customers(self) -> list[CustomerView]|None:
+        if self.pool is not None:
+            async with self.pool.acquire() as connection:
+                rows = await connection.fetch('''
+                    SELECT * FROM customers WHERE is_active = TRUE
+                ''')
+                return [CustomerView(**customer) for customer in rows]
+   
     async def get_matching_customers(self, user_id: int):
         if self.pool is not None:
             async with self.pool.acquire() as connection:
