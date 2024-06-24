@@ -96,7 +96,7 @@ class DB:
                 ''')
                 return [CustomerView(**customer) for customer in rows]
    
-    async def get_matching_customers(self, user_id: int):
+    async def get_matching_customers(self, user_id: int) -> list|None:
         if self.pool is not None:
             async with self.pool.acquire() as connection:
                 row = await connection.fetchrow(

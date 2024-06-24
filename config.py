@@ -3,6 +3,8 @@ from models.customer import Gender
 BOT_TOKEN = os.getenv("BOT_TOKEN") 
 DATABASE_URL = os.getenv("DATABASE_URL")  
 
+period_update_matching = 1
+
 DEFAULT_CUSTOMER = {
     'user_id': 0,                 
     'username': 'NoName',
@@ -21,9 +23,10 @@ DEFAULT_CUSTOMER = {
 length_message = 1000
 
 LANGUAGES = {
-    'ru': "🇷🇺 Russian 🇷🇺",
+    # 'ru': "🇷🇺 Russian 🇷🇺",
     'uk': "🇺🇦 Ukrainian 🇺🇦",
     'en': "🇺🇲 English 🇺🇲",
+    'de': "Deuthesdjklfjklsdjfklsjdklf",
 }
 
 GENDERS = {

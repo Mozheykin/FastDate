@@ -5,13 +5,13 @@ PROBLEM_LANGUAGE = 'You have a problem with the selected language. You need'\
 START_MESSAGE = {
     'ru': '''Fast date - это украинский продукт 🇺🇦. Который объединяет людей по всему миру 🌍. 
 
-⬇️Start Ваше путешествие с Fast Date⬇️''',
+⬇️Start Ваше путешествие с Fast Date⬇️\n/info\n/help\n/gold\n/deactivate\n/delete''',
     'uk': '''Fast date - це український 🇺🇦 продукт. Який об'єднує людей по всьому світу 🌍. 
 
-⬇️Start свою подорож з Fast Date⬇️''',
+⬇️Start свою подорож з Fast Date⬇️\n/info\n/help\n/gold\n/deactivate\n/delete''',
     'en': '''Fast date is a Ukrainian 🇺🇦 product. Which unites people all over the world 🌍 
 
-⬇️Start your journey with Fast Date⬇️/info\n/help\n/gold\n/deactivate\n/delete''',
+⬇️Start your journey with Fast Date⬇️\n/info\n/help\n/gold\n/deactivate\n/delete''',
 }
 
 DEACTIVATE_MESSAGE = {

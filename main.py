@@ -7,8 +7,9 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, FSInputFile, CallbackQuery, ContentType, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
+import time
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from handlers.matching import get_matching
 from handlers.support import change_customer
 from support.language import (ACTIVATE_MESSAGE, 
                         CHANGE_LANGUAGE, 
@@ -25,12 +26,16 @@ from support.language import (ACTIVATE_MESSAGE,
                         START_MESSAGE)
 from models.customer import Customer, CustomerView
 from db import DB 
-from support.keyboards import get_gender_keyboard, keyboard_select_language
+from support import keyboards
 # from handlers import matching, profile, support  
-from config import BOT_TOKEN, DEFAULT_CUSTOMER, DATABASE_URL, LANGUAGES
+from config import (BOT_TOKEN, 
+                    DEFAULT_CUSTOMER, 
+                    DATABASE_URL, 
+                    LANGUAGES, 
+                    period_update_matching)
 from support.translate import translate_prompt
-from support.keyboards import location_keyboard
 from models.registration import Form, RegistrationCustomer
+from handlers.matching import matching_index, get_matching
 
 dp = Dispatcher()  
 form_router = Router()
@@ -53,17 +58,18 @@ async def command_start_handler(message: Message) -> None:
         await db_postgres.add_customer(default_customer)
         start_message = translate_prompt(START_MESSAGE, language)
         await message.answer_video(logo_mp4)
-        await message.answer(start_message, reply_markup=keyboard_select_language)
+        await message.answer(start_message, reply_markup=keyboards.keyboard_select_language)
     else:
         default_customer = CustomerView(**geted_customer)
         language = default_customer.language
         if default_customer.is_active is not True:
             activate_message = translate_prompt(DEACTIVATE_MESSAGE, language) 
             await db_postgres.activate_customer(default_customer.user_id)
-            await message.reply(activate_message, reply_markup=keyboard_select_language)
+            await message.reply(activate_message, reply_markup=keyboards.keyboard_select_language)
         else:
             activate_message = translate_prompt(ACTIVATE_MESSAGE, language) 
             await message.reply(activate_message)
+            await get_matching(message, db_postgres, language)
             
 @dp.message(Command('delete'))
 async def delete_customer(message: Message):
@@ -93,6 +99,7 @@ async def process_username(message: Message, state: FSMContext) -> None:
     data = await state.update_data(username=message.text)
     await state.set_state(Form.age)
     language = data.get('language', 'en')
+    print(language)
     age_message = translate_prompt(REG_AGE, language)
     await message.answer(age_message)
 
@@ -103,12 +110,13 @@ async def process_age(message: Message, state: FSMContext) -> None:
         if 18 < age < 75:
             data = await state.update_data(age=age)
             language = data.get('language', 'en')
+            print(language)
             gender_message = translate_prompt(REG_GENDER, language)
             await state.set_state(Form.gender)
             customer = await db_postgres.get_customer(message.chat.id)
             if customer is not None:
                 customerview = CustomerView(**customer)
-                kb_gender = get_gender_keyboard(customerview.language)
+                kb_gender = keyboards.get_gender_keyboard(customerview.language)
                 await message.answer(gender_message, reply_markup=kb_gender)
 
 @dp.message(Form.gender)
@@ -138,7 +146,7 @@ async def process_photo(message: Message, state: FSMContext) -> None:
         await state.set_state(Form.location)
         await message.answer(
             location_message,
-            reply_markup=location_keyboard,
+            reply_markup=keyboards.location_keyboard,
         )
 
 @dp.message(Form.location, F.content_type == ContentType.LOCATION)
@@ -207,6 +215,14 @@ async def echo_handler(message: Message) -> None:
     except TypeError:
         await message.answer("Nice try!")
 
+async def job():
+    try:
+        await matching_index(db_postgres)
+    except Exception as e:
+        print(f'[ERROR] {e}')
+    finally:
+        time.sleep(1)
+
 async def main():
     global bot
     if BOT_TOKEN is None:
@@ -217,6 +233,9 @@ async def main():
 
 if __name__ == "__main__":     
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(job, trigger='interval', minutes=period_update_matching)
+    scheduler.start()
     print(f'[INFO] {DATABASE_URL=}')
     print(f'[INFO] {BOT_TOKEN=}')
     asyncio.run(main())

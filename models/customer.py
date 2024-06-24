@@ -5,6 +5,10 @@ class Gender(Enum):
     male = 'male'
     female = 'female'
 
+# class Location(BaseModel):
+#     latitude: float
+#     longitude: float
+
 class Customer(BaseModel):
     user_id: int                 
     username: str
@@ -14,7 +18,7 @@ class Customer(BaseModel):
     language: str
     info: str                 
     photo: str                 
-    location: str
+    location: str #Location
     range: int                 
     is_gold: bool
     is_active: bool

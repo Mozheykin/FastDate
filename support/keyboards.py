@@ -47,6 +47,18 @@ def get_matching_keyboard(language:str) -> ReplyKeyboardMarkup:
                     one_time_keyboard=True
                 )
 
+def get_main_menu_keyboard(language:str) -> ReplyKeyboardMarkup:
+    # TODO add language 
+    return ReplyKeyboardMarkup(
+                            keyboard=[
+                                [KeyboardButton(text="Изменить язык"),
+                                KeyboardButton(text="Изменить профиль"),
+                                KeyboardButton(text="Найти половинку")],
+                                [KeyboardButton(text="Купить статус GOLD")]
+                                ],
+                    resize_keyboard=True,
+                    one_time_keyboard=True)
+
 # def get_menu_keyboard(language: str) -> ReplyKeyboardMarkup:
 #     kb_menu = list()
 #     text_menu = translate_prompt('MENU', language)
