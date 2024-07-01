@@ -28,10 +28,10 @@ def translation(translated: str, source:str="auto",
 
 
 def translate_prompt(PROMPT_DICT:dict, target:str="ru") -> str:
-    if PROMPT_DICT[target] is not None:
+    if PROMPT_DICT.get(target) is not None:
         return PROMPT_DICT[target]
     else:
-        en_text = PROMPT_DICT['en']
+        en_text = PROMPT_DICT.get('en')
         if en_text is not None:
             translated = translation(en_text, source='en', target=target)
             if isinstance(translated, list):

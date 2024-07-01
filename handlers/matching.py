@@ -12,7 +12,6 @@ async def get_matching(message: Message, db_postgres: DB, language:str) -> None:
         keyboard = keyboards.get_main_menu_keyboard(language)
         await message.answer("No matching", reply_markup=keyboard)
 
-
 async def matching_index(db_postgres: DB) -> None:
     customers = await db_postgres.get_customers()
     if customers is None:

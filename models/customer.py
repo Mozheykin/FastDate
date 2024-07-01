@@ -20,7 +20,11 @@ class Customer(BaseModel):
     photo: str                 
     location: str #Location
     range: int                 
+    straik: int
+    role: str
+    disabled_gold: str
     is_gold: bool
+    is_baned: bool
     is_active: bool
 
 class CustomerView(BaseModel):
@@ -35,5 +39,9 @@ class CustomerView(BaseModel):
     photo: str                 
     location: str
     range: int                 
+    straik: int
+    role: str
+    disabled_gold: str
     is_gold: bool
+    is_baned: bool
     is_active: bool

@@ -38,8 +38,12 @@ GENDERS = {
         'male': "👨 Мужскій 👨",
         'female': "👩 Жіночий 👩",
     },
+    # 'en': {
+    #     'male': "👨 Male 👨",
+    #     'female': "👩 Female 👩",
+    # }
     'en': {
-        'male': "👨 Male 👨",
-        'female': "👩 Female 👩",
+        'male': "Male",
+        'female': "Female",
     }
 }

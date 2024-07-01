@@ -1,6 +1,8 @@
 import logging 
 import asyncio
 import sys
+import os
+from typing import Optional
 from aiogram import Bot, Dispatcher, Router, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -30,7 +32,7 @@ from support import keyboards
 # from handlers import matching, profile, support  
 from config import (BOT_TOKEN, 
                     DEFAULT_CUSTOMER, 
-                    DATABASE_URL, 
+                    DATABASE_URL, FOLDER_PHOTO, GENDERS, 
                     LANGUAGES, 
                     period_update_matching)
 from support.translate import translate_prompt
@@ -90,8 +92,8 @@ async def registration_customer(message: Message, state: FSMContext):
         def_customer = CustomerView(**customer)
         language = def_customer.language
         name_message = translate_prompt(REG_NAME, language)
-        await state.update_data(language=language)
         await state.set_state(Form.username)
+        await state.update_data(language=language)
         await message.answer(name_message)
 
 @dp.message(Form.username)
@@ -99,7 +101,6 @@ async def process_username(message: Message, state: FSMContext) -> None:
     data = await state.update_data(username=message.text)
     await state.set_state(Form.age)
     language = data.get('language', 'en')
-    print(language)
     age_message = translate_prompt(REG_AGE, language)
     await message.answer(age_message)
 
@@ -110,7 +111,6 @@ async def process_age(message: Message, state: FSMContext) -> None:
         if 18 < age < 75:
             data = await state.update_data(age=age)
             language = data.get('language', 'en')
-            print(language)
             gender_message = translate_prompt(REG_GENDER, language)
             await state.set_state(Form.gender)
             customer = await db_postgres.get_customer(message.chat.id)
@@ -118,11 +118,20 @@ async def process_age(message: Message, state: FSMContext) -> None:
                 customerview = CustomerView(**customer)
                 kb_gender = keyboards.get_gender_keyboard(customerview.language)
                 await message.answer(gender_message, reply_markup=kb_gender)
+        else:
+            db_customer = await db_postgres.get_customer(message.chat.id)
+            if db_customer is not None:
+                customer = CustomerView(**db_customer)
+                straik = customer.straik + 1
+                await change_customer(message.chat.id, db_postgres, 'straik', 
+                                        customer.straik, straik)
 
 @dp.message(Form.gender)
 async def process_gender(message: Message, state: FSMContext) -> None:
-    data = await state.update_data(gender=message.text)
+    data = await state.get_data()
     language = data.get('language', 'en')
+    gender = GENDERS.get(language, GENDERS.get('en'))
+    await state.update_data(gender=message.text)
     info_message = translate_prompt(REG_INFO, language)
     await state.set_state(Form.info)
     await message.answer(info_message)
@@ -134,20 +143,29 @@ async def process_info(message: Message, state: FSMContext) -> None:
     photo_message = translate_prompt(REG_PHOTO, language)
     await state.set_state(Form.photo)
     await message.answer(photo_message)
-    # Слать несколько фото
+
+async def download_photo(message: Message) -> Optional[str]:
+    if message.bot is not None and message.photo is not None:
+        photo_id = message.photo[-1].file_id
+        name_file = os.path.join(FOLDER_PHOTO, f'{photo_id}.jpg')
+        await message.bot.download(
+            file=photo_id,
+            destination=name_file
+        )
 
 @dp.message(Form.photo, F.content_type.in_({ContentType.PHOTO, ContentType.VIDEO}))
 async def process_photo(message: Message, state: FSMContext) -> None:
     if message.photo is not None:
-        photo_id = message.photo[-1].file_id
-        data = await state.update_data(photo=photo_id)
-        language = data.get('language', 'en')
-        location_message = translate_prompt(REG_LOCATION, language)
-        await state.set_state(Form.location)
-        await message.answer(
-            location_message,
-            reply_markup=keyboards.location_keyboard,
-        )
+        path = await download_photo(message)
+        if path is not None:    
+            data = await state.update_data(photo=path)
+            language = data.get('language', 'en')
+            location_message = translate_prompt(REG_LOCATION, language)
+            await state.set_state(Form.location)
+            await message.answer(
+                location_message,
+                reply_markup=keyboards.location_keyboard,
+            )
 
 @dp.message(Form.location, F.content_type == ContentType.LOCATION)
 async def process_location(message: Message, state: FSMContext) -> None:

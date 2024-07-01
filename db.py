@@ -124,7 +124,7 @@ class DB:
                                 gender TEXT,                 
                                 language TEXT DEFAULT 'en',
                                 info TEXT,                 
-                                photo TEXT,                 
+                                photo TEXT DEFAULT '[]',                 
                                 location TEXT,
                                 range INTEGER DEFAULT 500,                
                                 straik INTEGER DEFAULT 0,
